@@ -2,7 +2,7 @@ package com.appsdeveloperblog.estore.ordersservice.command.rest;
 
 import com.appsdeveloperblog.estore.ordersservice.command.CreateOrderCommand;
 import com.appsdeveloperblog.estore.ordersservice.command.OrderStatus;
-import jakarta.validation.Valid;
+
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.UUID;
 
 @RestController
@@ -25,7 +26,7 @@ public class OrdersCommandController {
     }
 
     @PostMapping
-    public String createOrders(@Valid @RequestBody OrdersRestModel ordersRestModel){
+    public String createOrders(@Valid @RequestBody CreateOrdersRestModel ordersRestModel){
         String returnValue = "";
         CreateOrderCommand createOrderCommand = CreateOrderCommand.builder()
                 .orderId(UUID.randomUUID().toString())
