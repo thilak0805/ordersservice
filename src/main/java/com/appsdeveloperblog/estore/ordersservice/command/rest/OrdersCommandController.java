@@ -38,11 +38,11 @@ public class OrdersCommandController {
                 .build();
 
         //command gateway sends the order object to command bus and command bus routes the order object to command handler
-        try {
+     //   try {
             returnValue = commandGateway.sendAndWait(createOrderCommand);
-        }catch (Exception e){
+      /*  }catch (Exception e){
             returnValue = e.getLocalizedMessage();
-        }
+        }*/
         return returnValue;
     }
 }
