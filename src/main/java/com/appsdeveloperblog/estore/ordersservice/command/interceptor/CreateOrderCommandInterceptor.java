@@ -22,6 +22,9 @@ public class CreateOrderCommandInterceptor implements MessageDispatchInterceptor
             logger.info("payload type============{}",command.getPayloadType());
             if(CreateOrderCommand.class.equals(command.getPayloadType())){
                 CreateOrderCommand createOrderCommand = (CreateOrderCommand) command.getPayload();
+                if(createOrderCommand.getProductId()==null || createOrderCommand.getProductId().isBlank() || createOrderCommand.getProductId().isEmpty()){
+                    throw new IllegalArgumentException("product Id is empty");
+                }
                 if(createOrderCommand.getQuantity()<=0){
                     throw new IllegalArgumentException("quantity cannot be less than or equal to zero");
                 }

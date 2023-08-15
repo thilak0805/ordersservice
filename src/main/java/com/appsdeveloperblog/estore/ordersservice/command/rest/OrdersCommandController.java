@@ -41,7 +41,7 @@ public class OrdersCommandController {
         try {
             returnValue = commandGateway.sendAndWait(createOrderCommand);
         }catch (Exception e){
-            e.printStackTrace();
+            returnValue = e.getLocalizedMessage();
         }
         return returnValue;
     }
