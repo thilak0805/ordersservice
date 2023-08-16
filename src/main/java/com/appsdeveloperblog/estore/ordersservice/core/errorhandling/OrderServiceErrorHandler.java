@@ -17,7 +17,7 @@ public class OrderServiceErrorHandler {
 
     @ExceptionHandler(value = CommandExecutionException.class)
     public ResponseEntity<Object> handleCommandExecutionException(CommandExecutionException ex, WebRequest request){
-        System.out.println("inside command execution exception method===========");
+        System.out.println("inside command execution exception method===========+"+ex.getStackTrace());
         ErrorMessage errorMessage = new ErrorMessage(new Date(), ex.getMessage());
         // return new ResponseEntity<>(ex.getMessage(), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
         return new ResponseEntity<>(errorMessage, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);

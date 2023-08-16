@@ -40,6 +40,7 @@ public class OrderAggregate {
 
     @EventSourcingHandler
     public void on(OrderCreatedEvent orderCreatedEvent) throws Exception{
+        logger.info("orcercreateevent has been triggerred from orderaggregate class");
         this.orderId = orderCreatedEvent.getOrderId();
         this.productId = orderCreatedEvent.getProductId();
         this.userId = orderCreatedEvent.getUserId();

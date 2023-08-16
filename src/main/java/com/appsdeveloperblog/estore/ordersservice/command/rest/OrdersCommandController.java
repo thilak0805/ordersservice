@@ -4,6 +4,8 @@ import com.appsdeveloperblog.estore.ordersservice.command.CreateOrderCommand;
 import com.appsdeveloperblog.estore.ordersservice.command.OrderStatus;
 
 import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,7 +18,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/orders")
 public class OrdersCommandController {
-
+    Logger logger = LoggerFactory.getLogger(OrdersCommandController.class);
 
     private final CommandGateway commandGateway;
 
@@ -39,7 +41,9 @@ public class OrdersCommandController {
 
         //command gateway sends the order object to command bus and command bus routes the order object to command handler
      //   try {
+        logger.info("before commandgateway sends the createordercommand to commanbus");
             returnValue = commandGateway.sendAndWait(createOrderCommand);
+        logger.info("after commandgateway sends the createordercommand to commanbus");
       /*  }catch (Exception e){
             returnValue = e.getLocalizedMessage();
         }*/

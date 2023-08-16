@@ -30,7 +30,7 @@ public class OrdersEventHandler {
         }catch (IllegalArgumentException e){
             e.printStackTrace();
         }
-        if(true) throw new Exception("Forcing exception in the order event handler class");
+       // if(true) throw new Exception("Forcing exception in the order event handler class");
         System.out.println("after saving the order entity");
     }
 
