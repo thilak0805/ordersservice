@@ -34,7 +34,7 @@ public class OrderAggregate {
         OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent();
         BeanUtils.copyProperties(createOrderCommand , orderCreatedEvent);
         AggregateLifecycle.apply(orderCreatedEvent);
-        if(true) throw new Exception("An error took place in the create order command in commandhandler method");
+       // if(true) throw new Exception("An error took place in the create order command in commandhandler method");
 
     }
 

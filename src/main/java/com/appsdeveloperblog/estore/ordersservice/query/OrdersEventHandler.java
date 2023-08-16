@@ -20,7 +20,7 @@ public class OrdersEventHandler {
     }
 
     @EventHandler
-    public void on(OrderCreatedEvent event){
+    public void on(OrderCreatedEvent event) throws Exception {
         System.out.println("inside ordereventhandler method===="+event.getOrderId());
         OrderEntity orderEntity = new OrderEntity();
         BeanUtils.copyProperties(event, orderEntity);
@@ -30,6 +30,7 @@ public class OrdersEventHandler {
         }catch (IllegalArgumentException e){
             e.printStackTrace();
         }
+        if(true) throw new Exception("Forcing exception in the order event handler class");
         System.out.println("after saving the order entity");
     }
 
