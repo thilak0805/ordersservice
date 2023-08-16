@@ -43,6 +43,7 @@ public class CreateOrderCommandInterceptor implements MessageDispatchInterceptor
             //query to check if order already present
                 OrderLookupEntity orderLookupEntity
                         = orderLookupRepository.findByProductIdOrAddressId(createOrderCommand.getProductId(),createOrderCommand.getAddressId());
+                logger.info("orderLookupEntity============{}",orderLookupEntity);
                 if(orderLookupEntity!=null){
                     throw new IllegalArgumentException(String.format("Order with Order id %s or addressId already exists",
                             createOrderCommand.getProductId(), createOrderCommand.getAddressId()));

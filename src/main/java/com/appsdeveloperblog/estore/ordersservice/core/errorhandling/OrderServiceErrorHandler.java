@@ -2,6 +2,7 @@ package com.appsdeveloperblog.estore.ordersservice.core.errorhandling;
 
 
 
+import org.axonframework.commandhandling.CommandExecutionException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,14 @@ import java.util.Date;
 
 @ControllerAdvice
 public class OrderServiceErrorHandler {
+
+    @ExceptionHandler(value = CommandExecutionException.class)
+    public ResponseEntity<Object> handleCommandExecutionException(CommandExecutionException ex, WebRequest request){
+        System.out.println("inside command execution exception method===========");
+        ErrorMessage errorMessage = new ErrorMessage(new Date(), ex.getMessage());
+        // return new ResponseEntity<>(ex.getMessage(), new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(errorMessage, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
     @ExceptionHandler(value = IllegalStateException.class)
     public ResponseEntity<Object> handleIllegalStateException(IllegalStateException ex, WebRequest request){
