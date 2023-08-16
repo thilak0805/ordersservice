@@ -5,6 +5,7 @@ import com.appsdeveloperblog.estore.ordersservice.core.data.OrdersRepository;
 import com.appsdeveloperblog.estore.ordersservice.core.events.OrderCreatedEvent;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
+import org.axonframework.messaging.interceptors.ExceptionHandler;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
@@ -26,9 +27,14 @@ public class OrdersEventHandler {
         System.out.println("before saving the order entity");
         try{
             ordersRepository.save(orderEntity);
-        }catch (Exception e){
+        }catch (IllegalArgumentException e){
             e.printStackTrace();
         }
         System.out.println("after saving the order entity");
+    }
+
+    @ExceptionHandler(resultType = IllegalArgumentException.class)
+    public void handle(IllegalArgumentException exception){
+        throw exception;
     }
 }
