@@ -2,9 +2,11 @@ package com.appsdeveloperblog.estore.ordersservice.saga;
 
 import com.appsdeveloperblog.estore.core.commands.ProcessPaymentCommand;
 import com.appsdeveloperblog.estore.core.commands.ReserveProductCommand;
+import com.appsdeveloperblog.estore.core.events.PaymentProcessedEvent;
 import com.appsdeveloperblog.estore.core.events.ProductReservedEvent;
 import com.appsdeveloperblog.estore.core.model.User;
 import com.appsdeveloperblog.estore.core.query.FetchUserPaymentDetailsQuery;
+import com.appsdeveloperblog.estore.ordersservice.command.ApproveOrderCommand;
 import com.appsdeveloperblog.estore.ordersservice.core.events.OrderCreatedEvent;
 import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.commandhandling.CommandMessage;
@@ -56,6 +58,7 @@ public class OrderSaga {
     @SagaEventHandler(associationProperty = "orderId")
     public void handle(ProductReservedEvent productReservedEvent){
         logger.info("product reserved event is called for orderId :"+productReservedEvent.getOrderId()+" and productId :"+productReservedEvent.getProductId());
+        logger.info("product reserved userId:"+productReservedEvent.getUserId());
         //process User payment details
         FetchUserPaymentDetailsQuery fetchUserPaymentDetailsQuery = new FetchUserPaymentDetailsQuery(productReservedEvent.getUserId());
         User userPaymentDetails= null;
@@ -76,13 +79,31 @@ public class OrderSaga {
                     .build();
             String result = null;
             try {
-                result = commandGateway.sendAndWait(processPaymentCommand, 10, TimeUnit.SECONDS);
+                //result = commandGateway.sendAndWait(processPaymentCommand, 10, TimeUnit.SECONDS);
+                //result = commandGateway.send(processPaymentCommand);
+                commandGateway.send(processPaymentCommand, new CommandCallback<ProcessPaymentCommand, Object>(){
+                    @Override
+                    public void onResult(CommandMessage<? extends ProcessPaymentCommand> commandMessage, CommandResultMessage<?> commandResultMessage) {
+                        if(commandResultMessage.isExceptional()){
+                            logger.info("starting compensating transaction for process payment command");
+
+                        }
+                    }
+                });
+
             }catch(Exception e){
                 e.printStackTrace();
             }
-            if(result == null){
-                logger.info("Process payment command is null, so initiating the compensating transaction");
-            }
+
         }
+    }
+
+
+    @SagaEventHandler(associationProperty = "orderId")
+    public void handle(PaymentProcessedEvent paymentProcessedEvent){
+        logger.info("handling payment processed event");
+        ApproveOrderCommand approveOrderCommand = new ApproveOrderCommand(paymentProcessedEvent.getOrderId());
+        //use command gateway to send command obj to command bus. command bus routes the request to command handler
+        commandGateway.send(approveOrderCommand);
     }
 }
