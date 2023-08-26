@@ -2,6 +2,7 @@ package com.appsdeveloperblog.estore.ordersservice.query;
 
 import com.appsdeveloperblog.estore.ordersservice.core.data.OrderEntity;
 import com.appsdeveloperblog.estore.ordersservice.core.data.OrdersRepository;
+import com.appsdeveloperblog.estore.ordersservice.core.events.OrderApprovedEvent;
 import com.appsdeveloperblog.estore.ordersservice.core.events.OrderCreatedEvent;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
@@ -37,5 +38,17 @@ public class OrdersEventHandler {
     @ExceptionHandler(resultType = IllegalArgumentException.class)
     public void handle(IllegalArgumentException exception){
         throw exception;
+    }
+
+    @EventHandler
+    public void on(OrderApprovedEvent event) throws Exception{
+
+        OrderEntity orderEntity = ordersRepository.findByOrderId(event.getOrderId());
+        if(orderEntity==null){
+            return;
+        }
+        orderEntity.setOrderStatus(event.getOrderStatus());
+        ordersRepository.save(orderEntity);
+
     }
 }
