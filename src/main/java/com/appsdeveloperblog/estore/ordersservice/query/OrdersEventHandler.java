@@ -1,19 +1,23 @@
 package com.appsdeveloperblog.estore.ordersservice.query;
 
+import com.appsdeveloperblog.estore.ordersservice.command.rest.OrderAggregate;
 import com.appsdeveloperblog.estore.ordersservice.core.data.OrderEntity;
 import com.appsdeveloperblog.estore.ordersservice.core.data.OrdersRepository;
 import com.appsdeveloperblog.estore.ordersservice.core.events.OrderApprovedEvent;
 import com.appsdeveloperblog.estore.ordersservice.core.events.OrderCreatedEvent;
+import com.appsdeveloperblog.estore.ordersservice.core.events.OrderRejectedEvent;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
 import org.axonframework.messaging.interceptors.ExceptionHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 @Component
 @ProcessingGroup("order-group")
 public class OrdersEventHandler {
-
+    Logger logger = LoggerFactory.getLogger(OrdersEventHandler.class);
     private final OrdersRepository ordersRepository;
 
     public OrdersEventHandler(OrdersRepository ordersRepository) {
@@ -42,13 +46,26 @@ public class OrdersEventHandler {
 
     @EventHandler
     public void on(OrderApprovedEvent event) throws Exception{
-
+        logger.info("inside OrdersEventHandler class order approved event====={}",event.getOrderId());
         OrderEntity orderEntity = ordersRepository.findByOrderId(event.getOrderId());
+        logger.info("orderEntity====={}",orderEntity);
         if(orderEntity==null){
+            logger.info("orderentity is null====");
             return;
         }
-        orderEntity.setOrderStatus(event.getOrderStatus());
-        ordersRepository.save(orderEntity);
+        try {
+            orderEntity.setOrderStatus(event.getOrderStatus());
+            ordersRepository.save(orderEntity);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
 
+    }
+
+    @EventHandler
+    public void on(OrderRejectedEvent orderRejectedEvent){
+        OrderEntity orderEntity = ordersRepository.findByOrderId(orderRejectedEvent.getOrderId());
+        orderEntity.setOrderStatus(orderRejectedEvent.getOrderStatus());
+        ordersRepository.save(orderEntity);
     }
 }
