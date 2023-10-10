@@ -26,10 +26,10 @@ public class OrdersEventHandler {
 
     @EventHandler
     public void on(OrderCreatedEvent event) throws Exception {
-        System.out.println("inside ordereventhandler method===="+event.getOrderId());
+        logger.info("inside ordereventhandler method====",event.getOrderId());
         OrderEntity orderEntity = new OrderEntity();
         BeanUtils.copyProperties(event, orderEntity);
-        System.out.println("before saving the order entity");
+        logger.info("before saving the order entity");
         try{
             ordersRepository.save(orderEntity);
         }catch (IllegalArgumentException e){

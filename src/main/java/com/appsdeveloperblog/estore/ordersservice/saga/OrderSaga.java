@@ -17,6 +17,8 @@ import org.axonframework.commandhandling.CommandCallback;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.commandhandling.CommandResultMessage;
 import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.deadline.DeadlineManager;
+import org.axonframework.deadline.annotation.DeadlineHandler;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.modelling.saga.EndSaga;
 import org.axonframework.modelling.saga.SagaEventHandler;
@@ -28,6 +30,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -35,11 +39,18 @@ import java.util.concurrent.TimeUnit;
 public class OrderSaga {
     Logger logger = LoggerFactory.getLogger("OrderSaga.class");
 
+    private final String PAYMENT_PROCESSING_TIMEOUT_DEADLINE="payment-processing-deadline";
+
+    private String scheduleId;
+
     @Autowired
     private transient CommandGateway commandGateway;
 
     @Autowired
     private transient QueryGateway queryGateway;
+
+    @Autowired
+    private transient DeadlineManager deadlineManager;
 
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
@@ -83,6 +94,12 @@ public class OrderSaga {
             return;
         }else{
             logger.info("Successfully fetched user payment details for user id "+userPaymentDetails.getFirstName());
+            // schedule a dealine manager
+            scheduleId = deadlineManager.schedule(Duration.of(10, ChronoUnit.SECONDS),
+                    PAYMENT_PROCESSING_TIMEOUT_DEADLINE, productReservedEvent);
+            //to replicate the deadline issue below code added
+             if(true) return;
+            
             ProcessPaymentCommand processPaymentCommand = ProcessPaymentCommand.builder()
                     .orderId(productReservedEvent.getOrderId())
                     .paymentDetails(userPaymentDetails.getPaymentDetails())
@@ -90,8 +107,8 @@ public class OrderSaga {
                     .build();
             String result = null;
             try {
-                result = commandGateway.sendAndWait(processPaymentCommand, 10, TimeUnit.SECONDS);
-                //result = commandGateway.send(processPaymentCommand);
+                //result = commandGateway.sendAndWait(processPaymentCommand, 10, TimeUnit.SECONDS);
+                result = commandGateway.send(processPaymentCommand).toString();
                 /*commandGateway.send(processPaymentCommand, new CommandCallback<ProcessPaymentCommand, Object>(){
                     @Override
                     public void onResult(CommandMessage<? extends ProcessPaymentCommand> commandMessage, CommandResultMessage<?> commandResultMessage) {
@@ -115,11 +132,15 @@ public class OrderSaga {
 
     @SagaEventHandler(associationProperty = "orderId")
     public void handle(PaymentProcessedEvent paymentProcessedEvent){
+        //cancelling deadline
+        cancelDeadline();
         logger.info("handling payment processed event");
         ApproveOrderCommand approveOrderCommand = new ApproveOrderCommand(paymentProcessedEvent.getOrderId());
         //use command gateway to send command obj to command bus. command bus routes the request to command handler
         commandGateway.send(approveOrderCommand);
+
     }
+
 
     @SagaEventHandler(associationProperty = "orderId")
     public void handle(ProductReservationCancelledEvent productReservationCancelledEvent){
@@ -144,6 +165,7 @@ public class OrderSaga {
 
 
     private void cancelProductReservation(ProductReservedEvent productReservedEvent, String reason){
+        cancelDeadline();
         CancelProductReservationCommand cancelProductReservationCommand =  CancelProductReservationCommand
                 .builder()
                 .orderId(productReservedEvent.getOrderId())
@@ -155,5 +177,16 @@ public class OrderSaga {
 
     }
 
+    @DeadlineHandler(deadlineName = PAYMENT_PROCESSING_TIMEOUT_DEADLINE)
+    public void handlePaymentDeadline(ProductReservedEvent productReservedEvent){
+        logger.info("Payment processing deadline took place, sending a compensating command to cancel the product reservation");
+        cancelProductReservation(productReservedEvent, "Payment timeout");
+    }
+
+    private void cancelDeadline() {
+        if(scheduleId!=null) {
+            deadlineManager.cancelAll("payment-processing-deadline");
+        }
+    }
 
 }

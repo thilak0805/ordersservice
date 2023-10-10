@@ -7,4 +7,6 @@ import javax.persistence.criteria.Order;
 public interface OrderLookupRepository extends JpaRepository<OrderLookupEntity, String> {
 
     OrderLookupEntity findByProductIdOrAddressId(String productId, String addressId);
+
+    OrderLookupEntity findByProductIdAndAddressId(String productId, String addressId);
 }
