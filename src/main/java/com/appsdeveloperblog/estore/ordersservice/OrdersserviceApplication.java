@@ -23,7 +23,7 @@ public class OrdersserviceApplication {
 		SpringApplication.run(OrdersserviceApplication.class, args);
 	}
 
-	@Autowired
+	//@Autowired
 	public void registerCreateOrderCommandInterceptor(ApplicationContext contxt, CommandBus commandBus){
 		commandBus.registerDispatchInterceptor(contxt.getBean(CreateOrderCommandInterceptor.class));
 	}

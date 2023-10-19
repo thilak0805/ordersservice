@@ -1,8 +1,9 @@
 package com.appsdeveloperblog.estore.ordersservice.command.rest;
 
+import com.appsdeveloperblog.estore.core.model.OrderStatus;
 import com.appsdeveloperblog.estore.ordersservice.command.ApproveOrderCommand;
 import com.appsdeveloperblog.estore.ordersservice.command.CreateOrderCommand;
-import com.appsdeveloperblog.estore.ordersservice.command.OrderStatus;
+
 import com.appsdeveloperblog.estore.ordersservice.command.RejectOrderCommand;
 import com.appsdeveloperblog.estore.ordersservice.command.interceptor.CreateOrderCommandInterceptor;
 import com.appsdeveloperblog.estore.ordersservice.core.events.OrderApprovedEvent;
